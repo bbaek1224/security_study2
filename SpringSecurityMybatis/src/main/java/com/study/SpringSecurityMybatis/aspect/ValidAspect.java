@@ -1,7 +1,9 @@
 package com.study.SpringSecurityMybatis.aspect;
 
+import com.study.SpringSecurityMybatis.dto.request.ReqOAuth2SignupDto;
 import com.study.SpringSecurityMybatis.dto.request.ReqSignupDto;
 import com.study.SpringSecurityMybatis.exception.ValidException;
+import com.study.SpringSecurityMybatis.service.OAuth2Service;
 import com.study.SpringSecurityMybatis.service.UserService;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -21,6 +23,9 @@ public class ValidAspect {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private OAuth2Service oAuth2Service;
+
     @Pointcut("@annotation(com.study.SpringSecurityMybatis.aspect.annotation.ValidAop)")
     private void pointCut() {
     }
@@ -30,14 +35,47 @@ public class ValidAspect {
         Object[] args = proceedingJoinPoint.getArgs();
         BeanPropertyBindingResult bindingResult = null;
 
-        for(Object arg : args) {
-            if(arg.getClass() == BeanPropertyBindingResult.class) {
+        for (Object arg : args) {
+            if (arg.getClass() == BeanPropertyBindingResult.class) {
                 bindingResult = (BeanPropertyBindingResult) arg;
                 break;
             }
         }
 
-        for(Object arg : args) {
+        for (Object arg : args) {
+            if (arg.getClass() == ReqSignupDto.class) {
+                ReqSignupDto dto = (ReqSignupDto) arg;
+
+                if (!dto.getPassword().equals(dto.getCheckPassword())) {
+                    FieldError fieldError = new FieldError("checkPassword", "checkPassword", "비밀번호가 일치하지 않습니다.");
+                    bindingResult.addError(fieldError);
+                }
+
+                if (userService.isDuplicateUsername(dto.getUsername())) {
+                    FieldError fieldError = new FieldError("username", "username", "이미 존재하는 사용자이름입니다.");
+                    bindingResult.addError(fieldError);
+                }
+            }
+        }
+
+        switch (proceedingJoinPoint.getSignature().getName()) {
+            case "signup":
+                validSignupDto(args, bindingResult);
+                break;
+            case "oAuth2Signup":
+                validOAuth2Signup(args, bindingResult);
+                break;
+        }
+
+        if (bindingResult.hasErrors()) {
+            throw new ValidException("유효성 검사 실패", bindingResult.getFieldErrors());
+        }
+
+        return proceedingJoinPoint.proceed();
+    }
+
+    private void validSignupDto(Object[] args, BindingResult bindingResult) {
+        for (Object arg : args) {
             if (arg.getClass() == ReqSignupDto.class) {
                 ReqSignupDto dto = (ReqSignupDto) arg;
 
@@ -56,7 +94,28 @@ public class ValidAspect {
         if (bindingResult.hasErrors()) {
             throw new ValidException("유효성 검사 실패", bindingResult.getFieldErrors());
         }
+    }
 
-        return proceedingJoinPoint.proceed();
+    private void validOAuth2Signup(Object[] args, BindingResult bindingResult) {
+        for (Object arg : args) {
+            if (arg.getClass() == ReqOAuth2SignupDto.class) {
+                ReqOAuth2SignupDto dto = (ReqOAuth2SignupDto) arg;
+
+                if (!dto.getPassword().equals(dto.getCheckPassword())) {
+                    FieldError fieldError = new FieldError("checkPassword", "checkPassword", "비밀번호가 일치하지 않습니다.");
+                    bindingResult.addError(fieldError);
+                }
+
+                if (userService.isDuplicateUsername(dto.getUsername())) {
+                    FieldError fieldError = new FieldError("username", "username", "이미 존재하는 사용자이름입니다.");
+                    bindingResult.addError(fieldError);
+                }
+            }
+        }
+
+        if (bindingResult.hasErrors()) {
+            throw new ValidException("유효성 검사 실패", bindingResult.getFieldErrors());
+        }
     }
 }
+

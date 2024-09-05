@@ -1,4 +1,7 @@
 spring:
+  config:
+    import: application-secret.yml
+
   datasource:
     url: jdbc:h2:file:./data/auth_db;MODE=MySQL
     driver-class-name: org.h2.Driver
@@ -16,5 +19,7 @@ mybatis:
   mapper-locations:
     - /mappers/*.xml
 
-jwt:
-  secret: 842bc7c097a91cb88cbea97df0f3367a8254e95f841f30289d58fc7323e46758dfc301ada7d55b4f797aec511f36a75fff32c3d9ef9110004b8fa25bc20cdf62a9f745c05882cd276970b759db2c8281765fd91b7593c292f1ba619bc985c3ee6aab858f70127fba9acbf2793760acd146c96793c245098e221384f976d6bc8372e36c8a7e70505ed2526eb37cd1e2c8545d0d057905b7f0cb8cf0efe27e9d499dd95733a9277b0d8adef44f75a40204c469dfc877458dbeccf53909fea5ea394bdc5e2a47cd164ff3e18cc49de76237f3cd9951b92e0f40b0d1d828f545b4d5bad7f1bba35576df93eda19e170a75dcc4ea34e6310848150312cd8031855160
+user:
+  profile:
+    img:
+      default: https://firebasestorage.googleapis.com/v0/b/userprofile-f3f36.appspot.com/o/user%2Fdefault.png?alt=media&token=8d0db455-269f-4c1a-bbe8-1813527fd68b

@@ -35,6 +35,9 @@ public class JwtProvider {
     }
 
     public String removeBearer(String bearerAccessToken) {
+        if(bearerAccessToken == null) {
+            throw new RuntimeException();
+        }
         int bearerLength = "bearer ".length();
         return bearerAccessToken.substring(bearerLength);
     }

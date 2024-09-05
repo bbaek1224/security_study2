@@ -9,7 +9,16 @@
         <result property="password" column="password" />
         <result property="name" column="name" />
         <result property="email" column="email" />
+        <result property="img" column="img" />
+        <collection property="oAuth2Users" javaType="java.util.Set" resultMap="oAuth2UserResultMap" />
         <collection property="userRoles" javaType="java.util.Set" resultMap="userRolesResultMap"/>
+    </resultMap>
+
+    <resultMap id="oAuth2UserResultMap" type="com.study.SpringSecurityMybatis.entity.OAuth2User">
+        <id property="id" column="oauth2_user_id"/>
+        <result property="userId" column="ou_user_id" />
+        <result property="oAuth2Name" column="oauth2_name" />
+        <result property="provider" column="provider" />
     </resultMap>
 
     <resultMap id="userRolesResultMap" type="com.study.SpringSecurityMybatis.entity.UserRoles">
@@ -26,8 +35,15 @@
 
     <insert id="save" useGeneratedKeys="true" keyProperty="id">
         insert into user
-        values(default, #{username}, #{password}, #{name}, #{email})
+        values(default, #{username}, #{password}, #{name}, #{email}, default)
     </insert>
+    <update id="modifyImgById">
+        update user
+        set
+            img = #{img}
+        where
+            id = #{id}
+    </update>
 
     <delete id="deleteById">
         delete
@@ -44,6 +60,11 @@
             u.password,
             u.name,
             u.email,
+            u.img,
+            ou.id as oauth2_user_id,
+            ou.user_id as ou_user_id,
+            ou.oauth2_name,
+            ou.provider,
             ur.id as user_roles_id,
             ur.user_id as ur_user_id,
             ur.role_id as ur_role_id,
@@ -51,6 +72,7 @@
             r.name as role_name
         from
             user u
+            left outer join oauth2_user ou on(ou.user_id = u.id)
             left outer join user_roles ur on(ur.user_id = u.id)
             left outer join role r on(r.id = ur.role_id)
         where
@@ -63,6 +85,11 @@
             u.password,
             u.name,
             u.email,
+            u.img,
+            ou.id as oauth2_user_id,
+            ou.user_id as ou_user_id,
+            ou.oauth2_name,
+            ou.provider,
             ur.id as user_roles_id,
             ur.user_id as ur_user_id,
             ur.role_id as ur_role_id,
@@ -70,9 +97,35 @@
             r.name as role_name
         from
             user u
+            left outer join oauth2_user ou on(ou.user_id = u.id)
             left outer join user_roles ur on(ur.user_id = u.id)
             left outer join role r on(r.id = ur.role_id)
         where
             u.id = #{id}
+    </select>
+    <select id="findByOAuth2Name" resultMap="userResultMap">
+        select
+            u.id as user_id,
+            u.username,
+            u.password,
+            u.name,
+            u.email,
+            u.img,
+            ou.id as oauth2_user_id,
+            ou.user_id as ou_user_id,
+            ou.oauth2_name,
+            ou.provider,
+            ur.id as user_roles_id,
+            ur.user_id as ur_user_id,
+            ur.role_id as ur_role_id,
+            r.id as role_id,
+            r.name as role_name
+        from
+            user u
+            left outer join oauth2_user ou on(ou.user_id = u.id)
+            left outer join user_roles ur on(ur.user_id = u.id)
+            left outer join role r on(r.id = ur.role_id)
+        where
+            ou.oauth2_name = #{oAuth2Name}
     </select>
 </mapper>

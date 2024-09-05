@@ -7,7 +7,8 @@ CREATE TABLE USER (
     username VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL
+    email VARCHAR(255) NOT NULL,
+    img TEXT not null DEFAULT 'https://firebasestorage.googleapis.com/v0/b/userprofile-f3f36.appspot.com/o/user%2Fdefault.png?alt=media&token=8d0db455-269f-4c1a-bbe8-1813527fd68b'
 );
 
 CREATE TABLE ROLE (
@@ -24,6 +25,13 @@ CREATE TABLE USER_ROLES (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
     role_id BIGINT NOT NULL
+);
+
+CREATE TABLE OAUTH2_USER (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    oauth2_name VARCHAR(255) UNIQUE not null,
+    provider VARCHAR(255) not null
 );
 
 

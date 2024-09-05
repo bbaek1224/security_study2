@@ -2,6 +2,8 @@ package com.study.SpringSecurityMybatis.config;
 
 import com.study.SpringSecurityMybatis.security.filter.JwtAccessTokenFilter;
 import com.study.SpringSecurityMybatis.security.handler.AuthenticationHandler;
+import com.study.SpringSecurityMybatis.security.handler.OAuth2SuccessHandler;
+import com.study.SpringSecurityMybatis.service.OAuth2Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,11 +22,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private JwtAccessTokenFilter jwtAccessTokenFilter;
     @Autowired
     private AuthenticationHandler authenticationHandler;
-
-    @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+    @Autowired
+    private OAuth2SuccessHandler oAuth2SuccessHandler;
+    @Autowired
+    private OAuth2Service oAuth2Service;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -34,6 +35,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.headers().frameOptions().disable();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.cors();
+
+        http.oauth2Login()
+                .successHandler(oAuth2SuccessHandler)
+                .userInfoEndpoint()
+                .userService(oAuth2Service);
+
         http.exceptionHandling().authenticationEntryPoint(authenticationHandler);
         http.authorizeRequests()
                 .antMatchers("/auth/**", "/h2-console/**")
